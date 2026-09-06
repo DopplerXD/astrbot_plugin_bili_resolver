@@ -9,17 +9,23 @@ _✨ bilibili小组件等转链的工具 ✨_
 [![License](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0.html)
 [![Python 3.10+](https://img.shields.io/badge/Python-3.10%2B-blue.svg)](https://www.python.org/)
 [![AstrBot](https://img.shields.io/badge/AstrBot-4.0%2B-orange.svg)](https://github.com/Soulter/AstrBot)
-[![GitHub](https://img.shields.io/badge/作者-chufeng-blue)](https://github.com/chufeng)
+[![GitHub](https://img.shields.io/badge/原作者-chufeng-blue)](https://github.com/chufeng)
 
 </div>
 
 AstrBot 插件 —— 自动解析群聊/私聊中的 B 站链接，返回视频信息摘要。
 
-> 本插件主要是为了避免转链容易被 QQ 踢下线的情况，本人从插件发布到现在还未被踢下线。
+本仓库由 [DopplerXD](https://github.com/DopplerXD/astrbot_plugin_bili_resolver) Fork 自 [chufeng/astrbot_plugin_bili_resolver](https://github.com/chufeng/astrbot_plugin_bili_resolver)，感谢原作者的开发与开源。
+
+## 本 Fork 的改动
+
+QQ 小程序卡片本身已经展示封面、标题等信息，无需链接解析器再次回复相同内容。因此，本 Fork 新增了 `enabled_link_types` 配置，可在 AstrBot WebUI 中勾选需要自动解析的类型：短链、视频、番剧、专栏文章、动态和 QQ 小程序卡片。
+
+默认开启除 QQ 小程序卡片外的所有类型；如需解析 QQ 卡片，可手动勾选。全部取消勾选则停止自动解析，`/搜视频` 指令不受影响。
 
 ## 效果示例
 
-群里有人发了一个 B 站链接或小程序卡片，机器人自动回复：
+群里有人发了一个已启用类型的 B 站链接，机器人自动回复（小程序卡片需先在配置中勾选）：
 
 ```
 https://www.bilibili.com/video/av114556558967080?p=1
@@ -55,7 +61,13 @@ https://www.bilibili.com/video/av114556558967080?p=1
 
 ## 安装
 
-**推荐**：在 AstrBot WebUI 的插件管理页面，搜索 `astrbot_plugin_bili_resolver` 一键安装。
+安装本 Fork：在 AstrBot WebUI 的插件管理页面，通过仓库地址安装，填写本仓库地址：
+
+```text
+https://github.com/DopplerXD/astrbot_plugin_bili_resolver
+```
+
+也可下载本仓库的 ZIP 包，在 WebUI 中上传安装。请使用本仓库地址或 ZIP 包，以安装包含可选解析类型配置的 Fork 版本。
 
 手动安装：将插件目录放入 AstrBot 的 `data/plugins/` 目录下，重启或热重载即可。
 
