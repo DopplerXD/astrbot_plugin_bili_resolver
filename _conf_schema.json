@@ -4,6 +4,14 @@
     "type": "bool",
     "default": true
   },
+  "enabled_link_types": {
+    "description": "自动解析的链接类型",
+    "type": "list",
+    "render_type": "checkbox",
+    "options": ["短链", "视频", "番剧", "专栏文章", "动态", "QQ 小程序卡片"],
+    "default": ["短链", "视频", "番剧", "专栏文章", "动态"],
+    "hint": "勾选需要自动解析的类型，全部取消则不自动解析。短链和 QQ 小程序卡片按来源类型控制，不受目标内容类型勾选状态影响。/搜视频 指令不受此项影响。"
+  },
   "enable_search": {
     "description": "启用 /搜视频 指令",
     "type": "bool",

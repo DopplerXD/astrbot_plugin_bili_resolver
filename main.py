@@ -32,12 +32,39 @@ HEADERS = {
 DEFAULT_TIMEOUT = ClientTimeout(total=15)
 
 BILI_PATTERN = re.compile(
-    r"(b23\.tv)|(bili(22|23|33|2233)\.cn)|(\.bilibili\.com)"
+    r"(b23\.tv)|(bili(22|23|33|2233)\.cn)|(\bbilibili\.com)"
     r"|(\b(av|cv)(\d+))|\b(BV([a-zA-Z0-9]{10})+)"
     r"|(\[\[QQ小程序\]哔哩哔哩\])|(QQ小程序&amp;#93;哔哩哔哩)"
     r"|(QQ小程序&#93;哔哩哔哩)",
     re.I,
 )
+
+DEFAULT_LINK_TYPES = ("短链", "视频", "番剧", "专栏文章", "动态")
+
+SHORT_LINK_PATTERN = re.compile(
+    r"b23\.tv/\w+|bili(?:22|23|33|2233)\.cn/\w+", re.I
+)
+
+QQ_CARD_PATTERN = re.compile(
+    r"\[\[QQ小程序\]哔哩哔哩\]|QQ小程序(?:&amp;|&)#93;哔哩哔哩",
+    re.I,
+)
+
+
+def _get_link_type(text: str) -> str:
+    if SHORT_LINK_PATTERN.search(text.replace("\\", "")):
+        return "短链"
+    url, _, _ = analysis_bilibili.extract(text)
+    for marker, link_type in (
+        ("view?", "视频"),
+        ("bangumi", "番剧"),
+        ("article", "专栏文章"),
+        ("dynamic", "动态"),
+    ):
+        if marker in url:
+            return link_type
+    return ""
+
 
 IMAGE_SUFFIXES: Set[str] = {
     ".jpg", ".jpeg", ".png", ".gif", ".bmp", ".jfif", ".webp",
@@ -234,6 +261,9 @@ class BilibiliAnalysis(Star):
         # 功能开关
         self.enable_auto_parse = config.get("enable_auto_parse", True)
         self.enable_search = config.get("enable_search", True)
+        self.enabled_link_types = set(
+            config.get("enabled_link_types", DEFAULT_LINK_TYPES)
+        )
 
         # 图片开关，同步到 analysis_bilibili 模块
         analysis_bilibili.analysis_display_image = config.get(
@@ -277,7 +307,7 @@ class BilibiliAnalysis(Star):
     @filter.event_message_type(filter.EventMessageType.ALL)
     async def on_message(self, event: AstrMessageEvent):
         """自动解析消息中的 Bilibili 链接"""
-        if not self.enable_auto_parse:
+        if not self.enable_auto_parse or not self.enabled_link_types:
             return
 
         # 群组白名单/黑名单检查
@@ -306,8 +336,12 @@ class BilibiliAnalysis(Star):
                             break
 
         # message_str 本身可能就是 JSON
-        if not json_url and text.startswith("{"):
-            json_url = _try_parse_json(text)
+        if not json_url:
+            json_url = _extract_from_raw_message(text)
+
+        is_qq_card = bool(json_url or QQ_CARD_PATTERN.search(text))
+        if is_qq_card and "QQ 小程序卡片" not in self.enabled_link_types:
+            return
 
         if json_url:
             logger.info(f"从 JSON 卡片提取到 URL: {json_url}")
@@ -315,11 +349,14 @@ class BilibiliAnalysis(Star):
         elif not text or not BILI_PATTERN.search(text):
             return
 
+        if not is_qq_card:
+            link_type = _get_link_type(text)
+            if link_type and link_type not in self.enabled_link_types:
+                return
+
         try:
             session = await self._get_session()
-            if re.search(
-                r"(b23\.tv)|(bili(22|23|33|2233)\.cn)", text, re.I
-            ):
+            if SHORT_LINK_PATTERN.search(text.replace("\\", "")):
                 text = await b23_extract(text, session=session)
 
             msg = await bili_keyword(group_id, text, session=session)

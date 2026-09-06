@@ -3,4 +3,4 @@ author: chufeng
 description: bilibili小组件等转链的工具,方便PC查看链接,因为之前用其他的转链总是被踢下线,所以自己写了个简单版的,从发布以来还没被踢下线
 version: 1.0.3
 repo: https://github.com/chufeng/astrbot_plugin_bili_resolver
-display_name: Bilibili 解析
+display_name: Bilibili 解析（链接解析类型自定义优化）
